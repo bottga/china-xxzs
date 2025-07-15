@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中国国家政治形象数据可视化平台</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #c7000b;
+            --primary-light: #e74c3c;
+            --secondary-color: #f8f9fa;
+            --accent-color: #003a8c;
+            --accent-light: #3498db;
+            --gold-color: #d4af37;
+        }
+        
+        body {
+            font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+            background: 
+                radial-gradient(circle at 10% 20%, rgba(199, 0, 11, 0.05) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(0, 58, 140, 0.05) 0%, transparent 20%),
+                linear-gradient(135deg, #f5f7fa 0%, #e4edf9 100%);
+            color: #333;
+            padding-top: 80px;
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        /* 中国风背景元素 */
+        .chinese-pattern {
+            position: absolute;
+            opacity: 0.03;
+            z-index: -1;
+        }
+        
+        .pattern-1 {
+            top: 10%;
+            left: 5%;
+            font-size: 120px;
+            transform: rotate(15deg);
+            color: var(--primary-color);
+        }
+        
+        .pattern-2 {
+            bottom: 15%;
+            right: 7%;
+            font-size: 150px;
+            transform: rotate(-10deg);
+            color: var(--accent-color);
+        }
+        
+        .pattern-3 {
+            top: 40%;
+            left: 50%;
+            font-size: 100px;
+            transform: rotate(5deg);
+            color: var(--gold-color);
+        }
+        
+        .pattern-4 {
+            top: 70%;
+            left: 20%;
+            font-size: 80px;
+            transform: rotate(-15deg);
+            color: var(--primary-light);
+        }
+        
+        /* 导航栏 */
+        .navbar {
+            background: linear-gradient(to right, var(--primary-color), var(--accent-color));
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            padding: 12px 0;
+        }
+        
+        .navbar-brand {
+            font-weight: bold;
+            font-size: 1.4rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .navbar-brand i {
+            margin-right: 10px;
+            font-size: 1.5rem;
+        }
+        
+        .nav-link {
+            font-size: 1.1rem;
+            font-weight: 500;
+            margin: 0 8px;
+            position: relative;
+            padding: 8px 15px !important;
+            border-radius: 30px;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-link:hover, .nav-link.active {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        /* 页眉 */
+        .header {
+            text-align: center;
+            padding: 60px 0 40px;
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(rgba(245, 247, 250, 0.9), rgba(228, 237, 249, 0.9)), 
+                        url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="none" stroke="%23c7000b" stroke-width="0.3" stroke-opacity="0.1" stroke-dasharray="5,5"/></svg>');
+            background-size: 40px 40px;
+            margin-bottom: 30px;
+            border-bottom: 3px solid var(--primary-color);
+        }
+        
+        .header h1 {
+            position: relative;
+            display: inline-block;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .header h1::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 4px;
+            background: linear-gradient(to right, var(--primary-color), var(--accent-color));
+            border-radius: 2px;
+        }
+        
+        .header-subtitle {
+            font-size: 1.2rem;
+            max-width: 800px;
+            margin: 0 auto 25px;
+            color: var(--accent-color);
+            font-weight: 500;
+        }
+        
+        .header-highlight {
+            background: linear-gradient(to right, var(--primary-color), var(--accent-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: bold;
+        }
+        
+        /* 部分标题 */
+        .section-title {
+            position: relative;
+            padding-bottom: 15px;
+            margin: 40px 0 35px;
+            text-align: center;
+            font-weight: bold;
+            color: var(--accent-color);
+            font-size: 2rem;
+        }
+        
+        .section-title::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 4px;
+            background: linear-gradient(to right, var(--primary-color), var(--accent-color));
+            border-radius: 2px;
+        }
+        
+        .section-subtitle {
+            text-align: center;
+            max-width: 800px;
+            margin: -15px auto 35px;
+            color: #666;
+            font-size: 1.1rem;
+        }
+        
+        /* 卡片设计 */
+        .card {
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            margin-bottom: 35px;
+            border: none;
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+        
+        .card:hover {
+            transform: translateY(-12px) scale(1.01);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+        }
+        
+        .card-header {
+            background: linear-gradient(to right, var(--primary-color), var(--accent-color));
+            color: white;
+            font-weight: bold;
+            padding: 18px 25px;
+            border-bottom: none;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .card-header i {
+            margin-right: 12px;
+            font-size: 1.3rem;
+        }
+        
+        .card-body {
+            padding: 28px;
+            background-color: rgba(255, 255, 255, 0.7);
+        }
+        
+        /* 图表容器 */
+        .chart-container {
+            height: 320px;
+            background: linear-gradient(to bottom right, #f8f9fa, #eef2f7);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+            margin-bottom: 22px;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+        
+        .chart-img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            padding: 12px;
+            transition: transform 0.3s ease;
+        }
+        
+        .chart-container:hover .chart-img {
+            transform: scale(1.03);
+        }
+        
+        .sankey-container {
+            height: 400px; /* 放大的桑基图容器 */
+        }
+        
+        .info-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: linear-gradient(to right, var(--primary-color), var(--accent-light));
+            color: white;
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            z-index: 10;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+        }
+        
+        .chart-description {
+            text-align: center;
+            color: #555;
+            padding: 0 15px;
+            font-size: 15px;
+            line-height: 1.6;
+        }
+        
+        /* 页脚 */
+        .footer {
+            background: linear-gradient(to right, var(--accent-color), #002060);
+            color: white;
+            padding: 40px 0 20px;
+            margin-top: 70px;
+            position: relative;
+        }
+        
+        .footer::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(to right, var(--primary-color), var(--gold-color));
+        }
+        
+        .footer-content {
+            text-align: center;
+            padding: 20px 0;
+        }
+        
+        /* 返回顶部按钮 */
+        .back-to-top {
+            position: fixed;
+            bottom: 40px;
+            right: 40px;
+            width: 55px;
+            height: 55px;
+            background: linear-gradient(to right, var(--primary-color), var(--accent-color));
+            border-radius: 50%;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+            cursor: pointer;
+            z-index: 100;
+            opacity: 0;
+            transition: all 0.4s ease;
+            font-size: 20px;
+        }
+        
+        .back-to-top.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .back-to-top:hover {
+            transform: translateY(-5px) scale(1.1);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+        }
+        
+        /* 响应式调整 */
+        @media (max-width: 992px) {
+            .header h1 {
+                font-size: 2.3rem;
+            }
+            
+            .chart-container {
+                height: 280px;
+            }
+            
+            .sankey-container {
+                height: 350px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            body {
+                padding-top: 70px;
+            }
+            
+            .header {
+                padding: 40px 0 30px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+                padding-bottom: 12px;
+            }
+            
+            .section-title {
+                font-size: 1.8rem;
+            }
+            
+            .chart-container {
+                height: 250px;
+            }
+            
+            .sankey-container {
+                height: 320px;
+            }
+            
+            .back-to-top {
+                bottom: 25px;
+                right: 25px;
+                width: 50px;
+                height: 50px;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .section-title {
+                font-size: 1.6rem;
+            }
+            
+            .chart-container {
+                height: 220px;
+            }
+            
+            .sankey-container {
+                height: 280px;
+            }
+            
+            .card-header {
+                font-size: 1.1rem;
+                padding: 15px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 中国风背景元素 -->
+    <div class="chinese-pattern pattern-1">国</div>
+    <div class="chinese-pattern pattern-2">政</div>
+    <div class="chinese-pattern pattern-3">民</div>
+    <div class="chinese-pattern pattern-4">和</div>
+    
+    <!-- 导航栏 -->
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-chart-line"></i>中国国家政治形象数据可视化平台
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#mainstream">主流媒体</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#social">社交媒体</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#analysis">分析结论</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 页眉 -->
+    <header class="header">
+        <div class="container">
+            <h1 class="display-4 fw-bold">中国国家政治形象<span class="header-highlight">多维度分析</span></h1>
+            <p class="lead header-subtitle">基于主流媒体与社交媒体的综合数据可视化展示</p>
+            <div class="row justify-content-center">
+                <div class="col-lg-9">
+                    <div class="alert alert-light border" role="alert">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-info-circle me-3 text-primary fs-3"></i>
+                            <div>
+                                <h5 class="mb-2">数据洞察驱动决策</h5>
+                                <p class="mb-0">本平台提供对中国政治形象在各类媒体上的全面分析，助力政策研究和传播策略优化</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主要内容 -->
+    <main class="container my-5">
+        <!-- 主流媒体部分 -->
+        <section id="mainstream" class="mb-5">
+            <h2 class="section-title">主流媒体形象分析</h2>
+            <p class="section-subtitle">重点新闻网站等主流渠道的国家政治形象塑造</p>
+            
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <i class="fas fa-palette me-2"></i>主流媒体文章图片主要宣传颜色
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container">
+                                <img src="images/主流媒体文章图片主要宣传颜色.png" alt="主流媒体宣传颜色分布" class="chart-img">
+                                <div class="info-badge">色彩分析</div>
+                            </div>
+                            <p class="chart-description">
+                                该图表展示了主流媒体报道中使用的主要宣传颜色分布，灰黑色系比例居高，体现了国外对政治宣传的主色调特征
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <i class="fas fa-font me-2"></i>主流媒体标题词云分析
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container">
+                                <img src="images/主流媒体标题词云.png" alt="主流媒体标题词云" class="chart-img">
+                                <div class="info-badge">文本分析</div>
+                            </div>
+                            <p class="chart-description">
+                                通过词云展示主流媒体标题中的高频关键词，"中国"、"学者"、"美国"、"关税"等词汇出现频率最高
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 社交媒体部分 -->
+        <section id="social" class="mb-5">
+            <h2 class="section-title">社交媒体形象分析</h2>
+            <p class="section-subtitle">YouTube社交平台上的国家政治形象传播与互动</p>
+            
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <i class="fas fa-heart me-2"></i>社交媒体评论情感色彩分布
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container">
+                                <img src="images/评论情感色彩分布.png" alt="评论情感色彩分布" class="chart-img">
+                                <div class="info-badge">情感分析</div>
+                            </div>
+                            <p class="chart-description">
+                                分析显示，社交媒体上关于中国政治的评论中，正面情感占比33%，中性情感41%，负面情感26%
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <i class="fas fa-thumbs-up me-2"></i>不同情感评论的点赞数分布
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container">
+                                <img src="images/社交媒体不同情感色彩的评论点赞数分布.png" alt="情感-点赞数分布" class="chart-img">
+                                <div class="info-badge">互动分析</div>
+                            </div>
+                            <p class="chart-description">
+                                正面和中性评论获得的点赞数明显高于负面评论，表明社交媒体用户更倾向于支持正面评价
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-lg-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <i class="fas fa-comments me-2"></i>社交媒体评论内容词云
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container">
+                                <img src="images/社交媒体评论内容词云.png" alt="评论关键词词云" class="chart-img">
+                                <div class="info-badge">语义分析</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <i class="fas fa-chart-line me-2"></i>评论时间趋势（按情感色彩区分）
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container">
+                                <img src="images/社交媒体评论时间趋势_按情感色彩区分.png" alt="评论时间趋势分析" class="chart-img">
+                                <div class="info-badge">时间序列</div>
+                            </div>
+                            <p class="chart-description">
+                                在重大政治事件期间，积极评论数量呈现显著峰值，而消极评论在常规时期保持稳定低水平
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-lg-5">
+                    <div class="card">
+                        <div class="card-header">
+                            <i class="fas fa-chart-area me-2"></i>社交媒体评论分布盒式图
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container">
+                                <img src="images/社交媒体盒式图.png" alt="评论分布盒式图" class="chart-img">
+                                <div class="info-badge">分布分析</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-7">
+                    <div class="card">
+                        <div class="card-header">
+                            <i class="fas fa-project-diagram me-2"></i>国家-情感-点赞数桑基图
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container sankey-container">
+                                <img src="images/前十国家-情感色彩-点赞数分段_桑基图.png" alt="跨国情感分析桑基图" class="chart-img">
+                                <div class="info-badge">关系分析</div>
+                            </div>
+                            <p class="chart-description">
+                                展示了所获取的数据中，来自TOP10国家用户的情感倾向与互动情况
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 分析结论 -->
+        <section id="analysis" class="mb-5">
+            <h2 class="section-title">综合分析结论</h2>
+            <p class="section-subtitle">基于多源数据的国家政治形象传播效果评估与策略建议</p>
+            
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-lightbulb me-2"></i>核心洞察与策略建议
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="d-flex mb-4">
+                                <div class="flex-shrink-0">
+                                    <div class="bg-primary text-white rounded-circle p-3 d-flex align-items-center justify-content-center" style="width: 70px; height: 70px;">
+                                        <i class="fas fa-flag fs-3"></i>
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1 ms-4">
+                                    <h5 class="text-primary">主流媒体形象特征</h5>
+                                    <p>以黑灰为主色调，内容聚焦学者、关税、谈判等主题，呈现当代国际形势。</p>
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex mb-4">
+                                <div class="flex-shrink-0">
+                                    <div class="bg-success text-white rounded-circle p-3 d-flex align-items-center justify-content-center" style="width: 70px; height: 70px;">
+                                        <i class="fas fa-users fs-3"></i>
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1 ms-4">
+                                    <h5 class="text-success">社交媒体情感分布</h5>
+                                    <p>社交媒体上正面和中性评价占主导地位，特别是在重大政治事件期间，正面评论数量显著增加。</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex mb-4">
+                                <div class="flex-shrink-0">
+                                    <div class="bg-info text-white rounded-circle p-3 d-flex align-items-center justify-content-center" style="width: 70px; height: 70px;">
+                                        <i class="fas fa-globe-asia fs-3"></i>
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1 ms-4">
+                                    <h5 class="text-info">国际形象分析</h5>
+                                    <p>总体来说，国际媒体的评论总体趋势向好，且聚焦于各种政治事件，评论量会呈现激增。</p>
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex">
+                                <div class="flex-shrink-0">
+                                    <div class="bg-warning text-white rounded-circle p-3 d-flex align-items-center justify-content-center" style="width: 70px; height: 70px;">
+                                        <i class="fas fa-chart-network fs-3"></i>
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1 ms-4">
+                                    <h5 class="text-warning">传播模式优化</h5>
+                                    <p>积极评论获得更多点赞和转发，形成正向传播循环。建议构建"正能量内容池"，建立优质内容创作激励机制，提升传播效能。</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-primary mt-4">
+                        <div class="d-flex">
+                            <i class="fas fa-bullseye fs-1 me-3 text-primary"></i>
+                            <div>
+                                <h5 class="mb-2">核心结论与战略方向</h5>
+                                <p class="mb-0">综合分析表明，中国国家政治形象在各类媒体平台上整体呈现积极态势，特别是在国外受众和社交媒体受众中获得了广泛认同。主流媒体则聚焦于中国的历史遗留问题等，整体呈现负面居多。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <!-- 简化页脚，只保留蓝色背景 -->
+            </div>
+        </div>
+    </footer>
+
+    <!-- 返回顶部按钮 -->
+    <div class="back-to-top" id="backToTop">
+        <i class="fas fa-arrow-up"></i>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // 返回顶部按钮功能
+        const backToTopButton = document.getElementById('backToTop');
+        
+        window.addEventListener('scroll', () => {
+            if (window.pageYOffset > 300) {
+                backToTopButton.classList.add('show');
+            } else {
+                backToTopButton.classList.remove('show');
+            }
+        });
+        
+        backToTopButton.addEventListener('click', () => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+        
+        // 导航栏活动状态更新
+        document.addEventListener('DOMContentLoaded', function() {
+            const sections = document.querySelectorAll('section');
+            const navLinks = document.querySelectorAll('.nav-link');
+            
+            window.addEventListener('scroll', () => {
+                let current = '';
+                
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    const sectionHeight = section.clientHeight;
+                    
+                    if (pageYOffset >= (sectionTop - 100)) {
+                        current = section.getAttribute('id');
+                    }
+                });
+                
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href').substring(1) === current) {
+                        link.classList.add('active');
+                    }
+                });
+            });
+            
+            // 初始化卡片悬停效果
+            const cards = document.querySelectorAll('.card');
+            cards.forEach(card => {
+                card.addEventListener('mouseenter', () => {
+                    const header = card.querySelector('.card-header');
+                    header.style.background = 'linear-gradient(to right, #a00008, #002060)';
+                });
+                
+                card.addEventListener('mouseleave', () => {
+                    const header = card.querySelector('.card-header');
+                    header.style.background = 'linear-gradient(to right, var(--primary-color), var(--accent-color))';
+                });
+            });
+        });
+        
+        // 添加滚动动画效果
+        document.addEventListener('DOMContentLoaded', function() {
+            const animateOnScroll = function() {
+                const elements = document.querySelectorAll('.card');
+                
+                elements.forEach(element => {
+                    const elementTop = element.getBoundingClientRect().top;
+                    const elementVisible = 150;
+                    
+                    if (elementTop < window.innerHeight - elementVisible) {
+                        element.style.opacity = "1";
+                        element.style.transform = "translateY(0)";
+                    }
+                });
+            };
+            
+            // 设置初始状态
+            const cards = document.querySelectorAll('.card');
+            cards.forEach(card => {
+                card.style.opacity = "0";
+                card.style.transform = "translateY(30px)";
+                card.style.transition = "opacity 0.6s ease, transform 0.6s ease";
+            });
+            
+            // 监听滚动事件
+            window.addEventListener('scroll', animateOnScroll);
+            // 初始化调用
+            animateOnScroll();
+        });
+    </script>
+</body>
+</html>
