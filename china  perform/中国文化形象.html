@@ -1,0 +1,575 @@
+<html lang="zh-CN"><head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>中国对外文化传播数据可视化</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;family=Noto+Sans+SC:wght@300;400;500;700&amp;display=swap" rel="stylesheet">
+        
+        <!-- Tailwind配置 -->
+        <script>
+            tailwind.config = {
+                theme: {
+                    extend: {
+                        colors: {
+                            primary: '#165DFF',
+                            secondary: '#36D399',
+                            accent: '#FFAB00',
+                            neutral: '#3D4451',
+                            'base-100': '#FFFFFF',
+                            info: '#3ABFF8',
+                            success: '#36D399',
+                            warning: '#FBBD23',
+                            error: '#F87272',
+                            perspective1: '#165DFF', // 中国视角主色
+                            perspective2: '#9333EA', // 海外视角主色
+                        },
+                        fontFamily: {
+                            inter: ['Inter', 'sans-serif'],
+                            'noto-sc': ['Noto Sans SC', 'sans-serif'],
+                        },
+                    }
+                }
+            }
+        </script>
+        
+        <style type="text/tailwindcss">
+            @layer utilities {
+                .content-auto {
+                    content-visibility: auto;
+                }
+                .card-shadow {
+                    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+                }
+                .transition-custom {
+                    transition: all 0.3s ease;
+                }
+                .hover-scale {
+                    transition: transform 0.3s ease;
+                }
+                .hover-scale:hover {
+                    transform: scale(1.02);
+                }
+                .gradient-text {
+                    background-clip: text;
+                    -webkit-background-clip: text;
+                    color: transparent;
+                    background-image: linear-gradient(to right, #165DFF, #36D399);
+                }
+                .chart-container {
+                    position: relative;
+                    margin: auto;
+                    height: 100%;
+                    width: 100%;
+                }
+                .perspective-tab {
+                    @apply px-4 py-2 rounded-lg font-medium transition-all duration-200 cursor-pointer;
+                }
+                .perspective-tab.active {
+                    @apply bg-primary/10 text-primary;
+                }
+            }
+        </style>
+    </head>
+    <body class="font-inter text-gray-800">
+        <!-- 导航栏 -->
+        <header class="sticky top-0 z-50 bg-white shadow-md transition-all duration-300" id="navbar">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center h-16">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0 text-primary font-bold text-xl">
+                            <i class="fa fa-book mr-2"></i>中国对外文化传播
+                        </div>
+                    </div>
+                    <div class="hidden md:block">
+                        <div class="ml-10 flex items-center space-x-4">
+                            <a href="#overview" class="text-gray-600 hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition-custom">概览</a>
+                            <a href="#mainstream-media" class="text-gray-600 hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition-custom">海外主流媒体视角</a>
+                            <a href="#social-media" class="text-gray-600 hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition-custom">海外社交媒体视角</a>
+                            <a href="#policy-support" class="text-gray-600 hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition-custom">政策支持</a>
+                            <a href="#conclusion" class="text-gray-600 hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition-custom">结论</a>
+                        </div>
+                    </div>
+                    <div class="md:hidden">
+                        <button type="button" class="text-gray-600 hover:text-primary" id="menu-toggle">
+                            <i class="fa fa-bars text-xl"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 移动端菜单 -->
+            <div class="md:hidden hidden bg-white border-t" id="mobile-menu">
+                <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                    <a href="#overview" class="text-gray-600 hover:text-primary block px-3 py-2 rounded-md text-base font-medium">概览</a>
+                    <a href="#mainstream-media" class="text-gray-600 hover:text-primary block px-3 py-2 rounded-md text-base font-medium">海外主流媒体视角</a>
+                    <a href="#social-media" class="text-gray-600 hover:text-primary block px-3 py-2 rounded-md text-base font-medium">海外社交媒体视角</a>
+                    <a href="#policy-support" class="text-gray-600 hover:text-primary block px-3 py-2 rounded-md text-base font-medium">政策支持</a>
+                    <a href="#conclusion" class="text-gray-600 hover:text-primary block px-3 py-2 rounded-md text-base font-medium">结论</a>
+                </div>
+            </div>
+        </header>
+
+        <!-- 英雄区域 -->
+        <section class="relative bg-gradient-to-br from-primary to-primary/80 text-white py-16 md:py-24">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+                <div class="max-w-3xl mx-auto text-center">
+                    <h1 class="text-[clamp(2rem,5vw,3.5rem)] font-bold leading-tight mb-6">中国对外文化传播数据可视化</h1>
+                    <p class="text-[clamp(1rem,2vw,1.25rem)] text-white/90 mb-8">基于全球视角的文化数据分析与解读，呈现中国文化在世界的传播全景</p>
+                    <div class="flex flex-wrap justify-center gap-4">
+                        <a href="#overview" class="bg-white text-primary hover:bg-gray-100 px-6 py-3 rounded-lg font-medium transition-custom shadow-lg">
+                            开始探索 <i class="fa fa-arrow-down ml-2"></i>
+                        </a>
+                        <a href="#footer" class="bg-transparent border-2 border-white text-white hover:bg-white/10 px-6 py-3 rounded-lg font-medium transition-custom">数据来源</a>
+                    </div>
+                </div>
+            </div>
+            <!-- 装饰元素 -->
+            <div class="absolute top-0 right-0 w-1/2 h-full opacity-10">
+                <svg viewBox="0 0 1000 800" xmlns="http://www.w3.org/2000/svg" class="w-full h-full">
+                    <defs>
+                        <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#165DFF"></stop>
+                            <stop offset="100%" stop-color="#36D399"></stop>
+                        </linearGradient>
+                    </defs>
+                    <path d="M0,0 L1000,0 L1000,800 L0,800 Z" fill="url(#bgGradient)" opacity="0.3"></path>
+                    <path d="M0,400 Q500,0 1000,400 L1000,800 L0,800 Z" fill="#165DFF" opacity="0.2"></path>
+                    <path d="M0,400 Q500,800 1000,400 L1000,0 L0,0 Z" fill="#36D399" opacity="0.2"></path>
+                    <circle cx="500" cy="400" r="200" fill="white" opacity="0.1"></circle>
+                    <circle cx="300" cy="300" r="100" fill="white" opacity="0.1"></circle>
+                    <circle cx="700" cy="500" r="150" fill="white" opacity="0.1"></circle>
+                </svg>
+            </div>
+            <div class="absolute bottom-0 left-0 w-full h-16 bg-gradient-to-t from-gray-50 to-transparent"></div>
+        </section>
+
+        <!-- 概览部分 -->
+        <section id="overview" class="py-16 bg-white">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-12">
+                    <h2 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold text-neutral mb-4">中国文化传播概览</h2>
+                    <p class="text-gray-600 max-w-3xl mx-auto">中国文化源远流长，在全球文化交流中扮演着越来越重要的角色。本部分通过丰富的图片展示中国文化与世界其他国家和地区的联系。</p>
+                </div>
+                
+                <div class="mb-12">
+                    <p class="text-gray-700 mb-6">
+                        中国文化拥有五千年的悠久历史，是世界上最古老、最丰富的文化之一。从哲学思想到艺术创作，从传统节日到生活方式，中国文化以其独特的魅力吸引着世界的目光。近年来，随着中国经济的快速发展和国际影响力的提升，中国文化对外传播也迎来了新的机遇。
+                    </p>
+                    <p class="text-gray-700 mb-6">
+                        中国文化在全球的传播不仅丰富了世界文化的多样性，也增进了各国人民之间的相互了解和友谊。通过文化交流，中国向世界展示了自己的历史传统、价值观念和发展理念，同时也吸收了其他国家优秀的文化成果，推动了自身的发展和进步。在文化传播的过程中，传统艺术形式如京剧、武术、书法、绘画等发挥了重要作用。这些艺术形式不仅是中国文化的瑰宝，也是世界文化遗产的重要组成部分。此外，中国的美食、中医药、传统节日等也受到了越来越多海外人士的喜爱和关注。
+                    </p>
+                    <p class="text-gray-700">
+                        随着科技的不断进步，数字媒体和互联网平台为中国文化的对外传播提供了新的渠道和方式。通过社交媒体、在线视频、虚拟现实等技术，中国文化能够更快速、更广泛地传播到世界各地，与不同文化背景的人们进行互动和交流。
+                    </p>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="rounded-xl overflow-hidden hover-scale">
+                        <img src="https://ts1.tc.mm.bing.net/th/id/R-C.7f7b483b365464e9e8b06804268fee87?rik=4jA37KxPYSKAVw&amp;riu=http%3a%2f%2fgxqgps.com%2fUpFiles%2fArticle%2f2020%2f2%2f13%2f2020021361078009.JPG&amp;ehk=oeEhXF73QOx9w%2fH0fH9oCj2q4RFx0VsKDuNNwD6J%2bG0%3d&amp;risl=&amp;pid=ImgRaw&amp;r=0" alt="中国舞狮表演" class="w-full h-64 object-cover">
+                        <div class="p-4 bg-white">
+                            <h3 class="font-semibold text-lg mb-2">传统艺术：舞狮</h3>
+                            <p class="text-gray-600 text-sm">舞狮是中国传统民间艺术，已有一千多年的历史，象征着吉祥如意。每逢春节或重大庆典，舞狮表演都是不可或缺的节目。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="rounded-xl overflow-hidden hover-scale">
+                        <img src="https://n.sinaimg.cn/sinakd10111/372/w750h422/20230518/f899-4a99c870b9d0c707b4618fb382b9a600.jpg" alt="中国传统中医药" class="w-full h-64 object-cover">
+                        <div class="p-4 bg-white">
+                            <h3 class="font-semibold text-lg mb-2">中医药文化</h3>
+                            <p class="text-gray-600 text-sm">中医药是中国传统文化的重要组成部分，有着悠久的历史和丰富的实践经验。近年来，中医药在国际上的影响力不断扩大。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="rounded-xl overflow-hidden hover-scale">
+                        <img src="https://bpic.588ku.com/back_list_pic/23/06/17/70c523339260585a4d7df1521c6f4119.jpg" alt="中国熊猫" class="w-full h-64 object-cover">
+                        <div class="p-4 bg-white">
+                            <h3 class="font-semibold text-lg mb-2">国宝熊猫</h3>
+                            <p class="text-gray-600 text-sm">熊猫是中国特有的珍稀动物，也是中国文化的重要象征之一。作为"友谊使者"，熊猫为增进中外友好关系发挥了独特作用。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 海外主流媒体视角 -->
+        <section id="mainstream-media" class="py-16 bg-gray-50">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-12">
+                    <h2 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold text-neutral mb-4">海外主流媒体视角</h2>
+                    <p class="text-gray-600 max-w-3xl mx-auto">海外主流媒体是国际社会了解中国文化的重要窗口。本部分分析海外主流媒体对中国文化的报道倾向和关注点。</p>
+                </div>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <!-- 报道数量趋势 -->
+                    <div class="bg-white rounded-xl p-6 shadow-lg hover-scale card-shadow flex flex-col h-full">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="font-semibold text-lg text-neutral">主流媒体2025年有关中国文化的报道数量</h3>
+                            <div class="bg-primary/10 text-primary p-2 rounded-lg">
+                                <i class="fa fa-newspaper-o"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow h-80 chart-container">
+                            <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/code_assistant/eac2b06749a945d78ddc34a6f7c08bd9~tplv-a9rns2rl98-image.image?rk3s=8e244e95&amp;rrcfp=e75484ac&amp;x-expires=1753063824&amp;x-signature=nGJJpRtrQAPleXsvm7zVW099ysE%3D" alt="主流媒体报道数量图表" class="w-full h-full object-cover rounded-lg">
+                        </div>
+                        <p class="text-sm text-gray-500 mt-3">2025年，CNN对中国文化的报道量最多，为234篇。</p>
+                    </div>
+                    
+                    <!-- 报道主题分布 -->
+                    <div class="bg-white rounded-xl p-6 shadow-lg hover-scale card-shadow flex flex-col h-full">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="font-semibold text-lg text-neutral">CNN2025年中国文化报道十大高频词</h3>
+                            <div class="bg-primary/10 text-primary p-2 rounded-lg">
+                                <i class="fa fa-tags"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow h-80 chart-container">
+                            <img src="https://p9-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/code_assistant/cd618d6b979145a3ba940694be35dc18~tplv-a9rns2rl98-image.image?rk3s=8e244e95&amp;rrcfp=e75484ac&amp;x-expires=1753031493&amp;x-signature=ZnFK4kVQzVX2ZIS4dtxndEY1hqo%3D" alt="CNN报道高频词分布图" class="w-full h-full object-cover rounded-lg">
+                        </div>
+                        <p class="text-sm text-gray-500 mt-3">可以看出，2025年CNN对中国文化报道的高频词为Culture、Tradition、History等</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 海外社交媒体视角 -->
+        <section id="social-media" class="py-16 bg-white">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-12">
+                    <h2 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold text-neutral mb-4">海外社交媒体视角</h2>
+                    <p class="text-gray-600 max-w-3xl mx-auto">社交媒体已成为中国文化在海外传播的重要平台。本部分以YouTube为例分析中国文化内容在海外社交媒体上的传播特点和用户反馈。</p>
+                </div>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <!-- 平台分布 -->
+                    <div class="bg-white rounded-xl p-6 shadow-lg hover-scale card-shadow flex flex-col h-full">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="font-semibold text-lg text-neutral">YouTube评论情感分布</h3>
+                            <div class="bg-primary/10 text-primary p-2 rounded-lg">
+                                <i class="fa fa-share-alt"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow h-80 chart-container">
+                            <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/code_assistant/420bf5b3114640a98aa287ad53335770~tplv-a9rns2rl98-image.image?rk3s=8e244e95&amp;rrcfp=e75484ac&amp;x-expires=1753060187&amp;x-signature=syK3kPmX6hdjFZLwXri8LK%2FC%2B3I%3D" alt="YouTube评论情感分布图" class="w-full h-full object-cover rounded-lg">
+                        </div>
+                        <p class="text-sm text-gray-500 mt-3">近一年中国文化的热点输出视频，在YouTube的情感倾向是中立偏积极。</p>
+                    </div>
+                    
+                    <!-- 热门内容类型 -->
+                    <div class="bg-white rounded-xl p-6 shadow-lg hover-scale card-shadow flex flex-col h-full">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="font-semibold text-lg text-neutral">YouTube评论词云</h3>
+                            <div class="bg-primary/10 text-primary p-2 rounded-lg">
+                                <i class="fa fa-film"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow h-80 chart-container">
+                            <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/code_assistant/af378e9060d141d488e74d07b3bf0b94~tplv-a9rns2rl98-image.image?rk3s=8e244e95&amp;rrcfp=e75484ac&amp;x-expires=1753031647&amp;x-signature=Uz%2BRg3EBnFejwKEuILP%2F4Kk7IYI%3D" alt="YouTube评论词云图" class="w-full h-full object-cover rounded-lg">
+                        </div>
+                        <p class="text-sm text-gray-500 mt-3">YouTube用户在中国方面最关心的依旧是新疆、上海等被海外媒体大肆宣扬的政治敏感地区。</p>
+                    </div>
+                </div>
+                
+                <!-- 典型案例分析 -->
+                <div class="mt-8">
+                    <h3 class="text-xl font-semibold mb-6 text-center">典型案例分析</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <!-- 案例1 -->
+                        <div class="bg-white rounded-xl overflow-hidden shadow-lg hover-scale card-shadow">
+                            <div class="h-48 overflow-hidden relative">
+                                <img src="https://p9-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/code_assistant/e4901ab4d0aa49ac8252399da9bc2589~tplv-a9rns2rl98-image.image?rk3s=8e244e95&amp;rrcfp=e75484ac&amp;x-expires=1753111997&amp;x-signature=nHmDC%2FFcLGWkqUwnzPUzDWQ%2FuAg%3D" alt="中国美食在TikTok" class="w-full h-full object-cover">
+                                <div class="absolute inset-0 flex items-center justify-center bg-black/40 hover:opacity-0 transition-opacity duration-300">
+                                    <i class="fa fa-image text-white text-5xl"></i>
+                                </div>
+                            </div>
+                            <div class="p-6">
+                                <h4 class="font-semibold text-lg mb-2">中国美食在TikTok</h4>
+                                <p class="text-gray-600 text-sm mb-4">中国美食内容在TikTok上广受欢迎，许多海外用户通过短视频学习中国菜的制作方法，分享自己的尝试成果，形成了活跃的美食文化社区。</p>
+                            </div>
+                        </div>
+                        
+                        <!-- 案例2 -->
+                        <div class="bg-white rounded-xl overflow-hidden shadow-lg hover-scale card-shadow">
+                            <div class="h-48 overflow-hidden relative">
+                                <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/code_assistant/b4b49203c7cc4d7c855735c491cddfa7~tplv-a9rns2rl98-image.image?rk3s=8e244e95&amp;rrcfp=e75484ac&amp;x-expires=1753112011&amp;x-signature=U%2FusX%2Fu519qseW5R%2Bsi3Nn2kueg%3D" alt="中国传统手工艺在Instagram" class="w-full h-full object-cover">
+                                <div class="absolute inset-0 flex items-center justify-center bg-black/40 hover:opacity-0 transition-opacity duration-300">
+                                    <i class="fa fa-image text-white text-5xl"></i>
+                                </div>
+                            </div>
+                            <div class="p-6">
+                                <h4 class="font-semibold text-lg mb-2">中国传统手工艺在Instagram</h4>
+                                <p class="text-gray-600 text-sm mb-4">中国传统手工艺如剪纸、陶瓷、刺绣等在Instagram上吸引了大量关注，许多手工艺人通过平台展示技艺，与海外爱好者建立了直接联系。</p>
+                            </div>
+                        </div>
+                        
+                        <!-- 案例3 -->
+                        <div class="bg-white rounded-xl overflow-hidden shadow-lg hover-scale card-shadow">
+                            <div class="h-48 overflow-hidden relative">
+                                <img src="https://p9-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/code_assistant/9f224869a6884a459bfefb686cde4818~tplv-a9rns2rl98-image.image?rk3s=8e244e95&amp;rrcfp=e75484ac&amp;x-expires=1753112021&amp;x-signature=y5L7fKWXTfQxJ3Kpw7SY8iCtFTI%3D" alt="中国音乐在YouTube" class="w-full h-full object-cover">
+                                <div class="absolute inset-0 flex items-center justify-center bg-black/40 hover:opacity-0 transition-opacity duration-300">
+                                    <i class="fa fa-image text-white text-5xl"></i>
+                                </div>
+                            </div>
+                            <div class="p-6">
+                                <h4 class="font-semibold text-lg mb-2">中国音乐在YouTube</h4>
+                                <p class="text-gray-600 text-sm mb-4">中国流行音乐和传统音乐在YouTube上的播放量逐年增长，越来越多的中国音乐人通过国际平台走向世界，获得海外粉丝的喜爱。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 政策支持部分 -->
+        <section id="policy-support" class="py-16 bg-gray-50">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-12">
+                    <h2 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold text-neutral mb-4">政策支持</h2>
+                    <p class="text-gray-600 max-w-3xl mx-auto">政策支持是推动文化传播的重要保障。本部分介绍中国政府促进文化对外传播的相关政策和措施。</p>
+                </div>
+                
+                <!-- 政策时间线 -->
+                <div class="mb-12 relative">
+                    <div class="absolute left-0 md:left-1/2 top-0 bottom-0 w-1 bg-primary/20 transform md:-translate-x-1/2"></div>
+                    
+                    <div class="space-y-8">
+                        <!-- 政策1 -->
+                        <div class="relative flex flex-col md:flex-row items-center">
+                            <div class="order-2 md:order-1 w-full md:w-1/2 md:pr-12 md:text-right">
+                                <div class="bg-white rounded-xl p-6 shadow-lg hover-scale card-shadow">
+                                    <h3 class="font-semibold text-lg mb-2">《关于加快发展对外文化贸易的意见》</h3>
+                                    <p class="text-gray-600 text-sm">2014年发布，提出了一系列支持文化企业"走出去"的政策措施，包括财政支持、税收优惠、金融服务等，推动了文化产品和服务出口的快速发展。</p>
+                                </div>
+                            </div>
+                            <div class="order-1 md:order-2 relative z-10 flex items-center justify-center w-10 h-10 rounded-full bg-primary text-white mb-4 md:mb-0">
+                                <i class="fa fa-file-text-o"></i>
+                            </div>
+                            <div class="order-3 md:w-1/2 md:pl-12 hidden md:block"></div>
+                        </div>
+                        
+                        <!-- 政策2 -->
+                        <div class="relative flex flex-col md:flex-row items-center">
+                            <div class="order-2 md:order-1 w-full md:w-1/2 md:pr-12 hidden md:block"></div>
+                            <div class="order-1 md:order-2 relative z-10 flex items-center justify-center w-10 h-10 rounded-full bg-primary text-white mb-4 md:mb-0">
+                                <i class="fa fa-file-text-o"></i>
+                            </div>
+                            <div class="order-3 md:w-1/2 md:pl-12">
+                                <div class="bg-white rounded-xl p-6 shadow-lg hover-scale card-shadow">
+                                    <h3 class="font-semibold text-lg mb-2">《"一带一路"文化发展行动计划》</h3>
+                                    <p class="text-gray-600 text-sm">2016年发布，旨在加强与"一带一路"沿线国家的文化交流与合作，促进民心相通，推动中华文化走出去，提升中华文化国际影响力。</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 政策3 -->
+                        <div class="relative flex flex-col md:flex-row items-center">
+                            <div class="order-2 md:order-1 w-full md:w-1/2 md:pr-12 md:text-right">
+                                <div class="bg-white rounded-xl p-6 shadow-lg hover-scale card-shadow">
+                                    <h3 class="font-semibold text-lg mb-2">《关于推进对外文化传播高质量发展的意见》</h3>
+                                    <p class="text-gray-600 text-sm">2023年发布，提出了深化文化领域改革开放、激活创新发展新动能、激发市场主体发展活力、拓展合作渠道网络等多方面政策措施，推动对外文化传播规模稳步增长。</p>
+                                </div>
+                            </div>
+                            <div class="order-1 md:order-2 relative z-10 flex items-center justify-center w-10 h-10 rounded-full bg-primary text-white mb-4 md:mb-0">
+                                <i class="fa fa-file-text-o"></i>
+                            </div>
+                            <div class="order-3 md:w-1/2 md:pl-12 hidden md:block"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 结论部分 -->
+        <section id="conclusion" class="py-16 bg-white">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-12">
+                    <h2 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold text-neutral mb-4">结论与展望</h2>
+                    <p class="text-gray-600 max-w-3xl mx-auto">综合上述分析，我们可以看到中国对外文化传播取得的成就与面临的挑战。本部分总结主要发现并对未来发展提出展望。</p>
+                </div>
+                
+                <!-- 主要发现 -->
+                <div class="bg-white rounded-xl p-6 shadow-lg hover-scale card-shadow mb-8">
+                    <h3 class="font-semibold text-lg mb-6">主要发现</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="flex items-start">
+                            <div class="bg-primary/10 text-primary p-2 rounded-lg mr-4">
+                                <i class="fa fa-check-circle"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium mb-2">国际影响力显著提升</h4>
+                                <p class="text-gray-600 text-sm">中国文化在全球的影响力逐年提升，特别是在"一带一路"沿线国家，文化交流与合作日益密切。</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <div class="bg-primary/10 text-primary p-2 rounded-lg mr-4">
+                                <i class="fa fa-check-circle"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium mb-2">数字传播渠道重要性凸显</h4>
+                                <p class="text-gray-600 text-sm">社交媒体和数字平台成为中国文化对外传播的重要渠道，年轻一代受众对数字内容的接受度更高。</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <div class="bg-primary/10 text-primary p-2 rounded-lg mr-4">
+                                <i class="fa fa-check-circle"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium mb-2">政策支持效果显著</h4>
+                                <p class="text-gray-600 text-sm">政府出台的一系列支持政策对文化传播起到了积极的推动作用，海外媒体报道和社交媒体互动量大幅增加。</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <div class="bg-primary/10 text-primary p-2 rounded-lg mr-4">
+                                <i class="fa fa-check-circle"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium mb-2">内容创新仍需加强</h4>
+                                <p class="text-gray-600 text-sm">尽管取得了一定成绩，中国文化对外传播仍面临内容创新不足、传播方式单一等挑战，需要进一步探索更有效的传播策略。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 未来展望 -->
+                <div class="bg-white rounded-xl p-6 shadow-lg hover-scale card-shadow mb-8">
+                    <h3 class="font-semibold text-lg mb-6">未来展望</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="flex items-start">
+                            <div class="bg-secondary/10 text-secondary p-2 rounded-lg mr-4">
+                                <i class="fa fa-lightbulb-o"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium mb-2">深化国际合作</h4>
+                                <p class="text-gray-600 text-sm">加强与国际文化机构、媒体和企业的合作，共同开发文化产品和服务，扩大中国文化的国际市场份额。</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <div class="bg-secondary/10 text-secondary p-2 rounded-lg mr-4">
+                                <i class="fa fa-lightbulb-o"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium mb-2">利用新技术创新传播方式</h4>
+                                <p class="text-gray-600 text-sm">充分利用人工智能、虚拟现实、元宇宙等新技术，创新文化传播形式和内容，提高中国文化的吸引力和感染力。</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <div class="bg-secondary/10 text-secondary p-2 rounded-lg mr-4">
+                                <i class="fa fa-lightbulb-o"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium mb-2">培养国际化人才</h4>
+                                <p class="text-gray-600 text-sm">加强文化传播领域的人才培养，提高从业人员的国际视野和跨文化交流能力，为文化对外传播提供有力的人才支持。</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <div class="bg-secondary/10 text-secondary p-2 rounded-lg mr-4">
+                                <i class="fa fa-lightbulb-o"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium mb-2">打造具有国际影响力的文化品牌</h4>
+                                <p class="text-gray-600 text-sm">通过挖掘和整合中国优秀传统文化资源，打造一批具有国际影响力的文化品牌，提升中国文化的辨识度和美誉度。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 总结 -->
+                <div class="text-center mt-12">
+                    <p class="text-gray-700 mb-6">中国文化对外传播是一项长期而艰巨的任务，需要政府、企业、社会组织和个人的共同努力。</p>
+                    <p class="text-gray-700">随着中国综合国力的不断提升和国际地位的不断提高，相信中国文化将在世界文化舞台上发挥更加重要的作用，为促进人类文明交流互鉴作出更大贡献。</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 页脚 -->
+        <footer id="footer" class="bg-gray-800 text-white py-12">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div>
+                        <h3 class="font-semibold text-lg mb-4">快速链接</h3>
+                        <ul class="space-y-2 text-sm">
+                            <li><a href="#overview" class="text-gray-400 hover:text-white">概览</a></li>
+                            <li><a href="#mainstream-media" class="text-gray-400 hover:text-white">海外主流媒体视角</a></li>
+                            <li><a href="#social-media" class="text-gray-400 hover:text-white">海外社交媒体视角</a></li>
+                            <li><a href="#policy-support" class="text-gray-400 hover:text-white">政策支持</a></li>
+                            <li><a href="#conclusion" class="text-gray-400 hover:text-white">结论与展望</a></li>
+                        </ul>
+                    </div>
+                    
+                    <div>
+                        <h3 class="font-semibold text-lg mb-4">相关资源</h3>
+                        <ul class="space-y-2 text-sm">
+                            <li><a href="https://www.mct.gov.cn/" target="_blank" class="text-gray-400 hover:text-white">文化和旅游部</a></li>
+                            <li><a href="http://www.sarft.gov.cn/" target="_blank" class="text-gray-400 hover:text-white">国家广播电视总局</a></li>
+                            <li><a href="https://edition.cnn.com/" target="_blank" class="text-gray-400 hover:text-white">CNN官网</a></li>
+                            <li><a href="https://www.abc.net.au/news/" target="_blank" class="text-gray-400 hover:text-white">ABC官网</a></li>
+                            <li><a href="https://www.rt.com/" target="_blank" class="text-gray-400 hover:text-white">Russia Today官网</a></li>
+                            <li><a href="https://www.youtube.com/" target="_blank" class="text-gray-400 hover:text-white">YouTube官网</a></li>
+                            <li><a href="https://www.elsevier.com/" target="_blank" class="text-gray-400 hover:text-white">EI官网</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400 text-sm">
+                    <p>© 2025 中国对外文化传播数据可视化平台. 保留所有权利.</p>
+                </div>
+            </div>
+        </footer>
+
+        <script>
+            // 导航栏滚动效果
+            window.addEventListener('scroll', function() {
+                const navbar = document.getElementById('navbar');
+                if (window.scrollY > 10) {
+                    navbar.classList.add('bg-white/95', 'backdrop-blur-sm');
+                    navbar.classList.remove('bg-white');
+                } else {
+                    navbar.classList.remove('bg-white/95', 'backdrop-blur-sm');
+                    navbar.classList.add('bg-white');
+                }
+            });
+            
+            // 移动端菜单切换
+            document.getElementById('menu-toggle').addEventListener('click', function() {
+                const mobileMenu = document.getElementById('mobile-menu');
+                mobileMenu.classList.toggle('hidden');
+            });
+            
+            // 平滑滚动
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    
+                    const targetId = this.getAttribute('href');
+                    if (targetId === '#') return;
+                    
+                    const targetElement = document.querySelector(targetId);
+                    if (targetElement) {
+                        window.scrollTo({
+                            top: targetElement.offsetTop - 80,
+                            behavior: 'smooth'
+                        });
+                        
+                        // 关闭移动端菜单
+                        const mobileMenu = document.getElementById('mobile-menu');
+                        if (!mobileMenu.classList.contains('hidden')) {
+                            mobileMenu.classList.add('hidden');
+                        }
+                    }
+                });
+            });
+            
+            // 视角切换功能
+            document.querySelectorAll('.perspective-tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    document.querySelectorAll('.perspective-tab').forEach(t => {
+                        t.classList.remove('active');
+                    });
+                    this.classList.add('active');
+                });
+            });
+        </script>
+    
+    
+    </body></html>
